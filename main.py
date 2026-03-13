@@ -2,9 +2,11 @@
 import management
 
 from flask import Flask, render_template
+from db import create_tables
 
 app = Flask(__name__)
 
+create_tables()
 
 @app.route("/")
 def menu():
