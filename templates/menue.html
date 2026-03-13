@@ -6,7 +6,12 @@
     <title>Menü</title>
   </head>
   <body>
-    <button>Notenübersicht</button>
-    <button>Termine</button>
+    <form action="{{ url_for('notenuebersicht') }}" method="get">
+      <button type="submit">Notenübersicht</button>
+    </form>
+
+    <form action="{{ url_for('termine') }}" method="get">
+      <button type="submit">Termine</button>
+    </form>
   </body>
 </html>
