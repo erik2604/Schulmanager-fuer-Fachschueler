@@ -31,6 +31,9 @@
         {% for appointment in appointments %}
             <li>
                 {{ appointment["date"] }} - {{ appointment["title"] }} - {{ appointment["category"] }}
+                <form action="/appointments/delete/{{ appointment['id'] }}" method="POST" style="display:inline;">
+                    <button type="submit">Löschen</button>
+                </form>
             </li>
         {% endfor %}
     </ul>
