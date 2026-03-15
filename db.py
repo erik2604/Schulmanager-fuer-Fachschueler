@@ -1,13 +1,13 @@
 #Datenbank erstellen (Falls keine existiert)
 import sqlite3
 
-
+#Verbindung zur Datenbank herstellen
 def get_connection():
     connection = sqlite3.connect("schulmanager.db")
     connection.row_factory = sqlite3.Row
     return connection
 
-
+#Datenbank erstellen
 def create_tables():
     connection = get_connection()
     cursor = connection.cursor()
