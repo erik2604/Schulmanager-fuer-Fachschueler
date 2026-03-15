@@ -11,7 +11,7 @@
 
     <h2>Neuen Termin hinzufügen</h2>
     <form action="/appointments/add" method="post">
-        <label>Titel:</label>
+        <label>Fach:</label>
         <input type="text" name="title" required><br>
 
         <label>Beschreibung:</label>
@@ -21,7 +21,10 @@
         <input type="date" name="date" required><br>
 
         <label>Kategorie:</label>
-        <input type="text" name="category"><br>
+        <select name="category" required>
+            <option value="Schulaufgabe">Schulaufgabe</option>
+            <option value="Kurzarbeit">Kurzarbeit</option>
+        </select><br>
 
         <button type="submit">Termin hinzufügen</button>
     </form>
