@@ -6,13 +6,15 @@ from db import create_tables, get_connection
 
 app = Flask(__name__)
 
+#Datenbank wird erstellt, falls diese nicht bereits existiert
 create_tables()
 
+#Hauptmenü
 @app.route("/")
 def menu():
     return render_template("menue.html")
 
-
+#Terminübersicht
 @app.route("/termine")
 def termine():
     conn = get_connection()
@@ -22,6 +24,7 @@ def termine():
     conn.close()
     return render_template("termine.html", appointments=appointments)
 
+#Termin hinzufügen
 @app.route("/appointments/add", methods=["POST"])
 def add_appointment():
     title = request.form.get("title")
@@ -40,7 +43,7 @@ def add_appointment():
     
     return redirect(url_for('termine'))
 
-
+#Termin löschen
 @app.route("/appointments/delete/<int:id>", methods=["POST"])
 def delete_appointment(id):
     conn = get_connection()
@@ -51,12 +54,12 @@ def delete_appointment(id):
     
     return redirect(url_for('termine'))
 
-
+#Notenübersicht
 @app.route("/notenuebersicht")
 def notenuebersicht():
     return render_template("notenübersicht.html")
 
-
+#Starten des Programms/Applikation
 if __name__ == "__main__":
     app.run(debug=True)
 
