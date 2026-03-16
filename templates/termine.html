@@ -18,7 +18,7 @@
         <input type="text" name="description"><br>
 
         <label>Datum:</label>
-        <input type="date" name="date" required><br>
+        <input type="date" name="date" required min="{{ today }}"><br>
 
         <label>Kategorie:</label>
         <select name="category" required>
@@ -33,7 +33,7 @@
     <ul>
         {% for appointment in appointments %}
             <li>
-                {{ appointment["date"] }} - {{ appointment["title"] }} - {{ appointment["category"] }} - {{ appointment["description"] }}
+                {{ appointment["date"][8:10] }}/{{ appointment["date"][5:7] }}/{{ appointment["date"][0:4] }} - {{ appointment["title"] }} - {{ appointment["category"] }} - {{ appointment["description"] }}
                 <form action="/appointments/delete/{{ appointment['id'] }}" method="POST" style="display:inline;">
                     <button type="submit">Löschen</button>
                 </form>

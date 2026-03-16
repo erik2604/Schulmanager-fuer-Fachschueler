@@ -1,5 +1,6 @@
 #Hauptprogramm
 import management
+from datetime import datetime
 
 from flask import Flask, render_template, request, redirect, url_for
 from db import create_tables, get_connection
@@ -22,7 +23,9 @@ def termine():
     cursor.execute("SELECT * FROM appointments ORDER BY date ASC")
     appointments = cursor.fetchall()
     conn.close()
-    return render_template("termine.html", appointments=appointments)
+    
+    today = datetime.now().strftime("%Y-%m-%d")
+    return render_template("termine.html", appointments=appointments, today=today)
 
 #Termin hinzufügen
 @app.route("/appointments/add", methods=["POST"])
@@ -31,6 +34,9 @@ def add_appointment():
     description = request.form.get("description")
     date = request.form.get("date")
     category = request.form.get("category")
+
+    if date and date < datetime.now().strftime("%Y-%m-%d"):
+         return "Fehler: Termine in der Vergangenheit sind nicht erlaubt.", 400
 
     conn = get_connection()
     cursor = conn.cursor()
