@@ -32,7 +32,7 @@
         <ul>
             {% for grade in subject.grades %}
             <li>
-                {{ grade.grade }} ({{ grade.grade_type }})
+                {{ grade.grade | int }} ({{ grade.grade_type }})
                 <form action="/grades/delete/{{ grade.id }}" method="POST" style="display:inline;">
                     <button type="submit">Löschen</button>
                 </form>
