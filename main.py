@@ -9,10 +9,33 @@ app = Flask(__name__)
 #Datenbank wird erstellt, falls diese nicht bereits existiert
 create_tables()
 
+
+def calculate_overall_average(cursor):
+    cursor.execute("SELECT grade, weight, grade_type FROM grades")
+    grades = cursor.fetchall()
+
+    sum_grades = 0
+    sum_weights = 0
+
+    for grade in grades:
+        weight = grade["weight"] if grade["weight"] else (2 if grade["grade_type"] == "Schulaufgabe" else 1)
+        sum_grades += grade["grade"] * weight
+        sum_weights += weight
+
+    if sum_weights == 0:
+        return None
+
+    return round(sum_grades / sum_weights, 2)
+
 #Hauptmenü
 @app.route("/")
 def menu():
-    return render_template("menue.html")
+    conn = get_connection()
+    cursor = conn.cursor()
+    overall_average = calculate_overall_average(cursor)
+    conn.close()
+
+    return render_template("menue.html", overall_average=overall_average)
 
 #Terminübersicht
 @app.route("/termine")

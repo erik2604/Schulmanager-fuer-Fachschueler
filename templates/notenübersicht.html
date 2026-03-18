@@ -1,63 +1,372 @@
 <!DOCTYPE html>
 <html lang="de">
-	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>Notenübersicht</title>
-	</head>
-	<body>
-		<a href="/">Zurück zum Menü</a> <br>
-        <a href="termine">Zu den Terminen</a>
-    <h1>Notenübersicht</h1>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Notenübersicht</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
 
-    <h2>Neues Fach hinzufügen</h2>
-    <form action="/subjects/add" method="POST">
-        <label>Fachname:</label>
-        <input type="text" name="name" required>
-        <button type="submit">Fach speichern</button>
-    </form>
+        <style>
+            :root {
+                --bg-top: #f0f8f2;
+                --bg-bottom: #fff5ec;
+                --text: #182b20;
+                --muted: #617468;
+                --panel: #ffffff;
+                --line: #e7ece9;
+                --good: #1e734b;
+                --danger: #9a3120;
+            }
 
-    <hr>
+            * {
+                box-sizing: border-box;
+            }
 
-    {% for subject in subjects %}
-    <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 20px;">
-        <h3>{{ subject.name }} - Schnitt: {{ subject.average }}</h3>
-        
-        <form action="/subjects/delete/{{ subject.id }}" method="POST" style="display:inline;">
-            <button type="submit" onclick="return confirm('Möchtest du das Fach und alle Noten wirklich löschen?')">Fach löschen</button>
-        </form>
+            body {
+                margin: 0;
+                font-family: "DM Sans", "Segoe UI", sans-serif;
+                color: var(--text);
+                background:
+                    radial-gradient(circle at 15% 8%, rgba(34, 125, 79, 0.12), transparent 44%),
+                    radial-gradient(circle at 86% 82%, rgba(203, 118, 44, 0.12), transparent 40%),
+                    linear-gradient(155deg, var(--bg-top), var(--bg-bottom));
+            }
 
-        <h4>Noten:</h4>
-        {% if subject.grades %}
-        <ul>
-            {% for grade in subject.grades %}
-            <li>
-                {{ grade.grade | int }} ({{ grade.grade_type }})
-                <form action="/grades/delete/{{ grade.id }}" method="POST" style="display:inline;">
-                    <button type="submit">Löschen</button>
-                </form>
-            </li>
-            {% endfor %}
-        </ul>
-        {% else %}
-        <p>Noch keine Noten eingetragen.</p>
-        {% endif %}
+            .container {
+                width: min(1120px, 94vw);
+                margin: 22px auto;
+                background: rgba(255, 255, 255, 0.85);
+                border-radius: 24px;
+                padding: 22px;
+                box-shadow: 0 22px 64px rgba(0, 0, 0, 0.12);
+                backdrop-filter: blur(6px);
+            }
 
-        <h4>Note hinzufügen:</h4>
-        <form action="/grades/add/{{ subject.id }}" method="POST">
-            <label>Note (1 bis 6):</label>
-            <input type="number" step="1" name="grade" min="1" max="6" required>
-            
-            <label>Art:</label>
-            <select name="grade_type" required>
-                <option value="Kurzarbeit">Kurzarbeit</option>
-                <option value="Schulaufgabe">Schulaufgabe</option>
-            </select>
-            
-            <button type="submit">Note eintragen</button>
-        </form>
-    </div>
-    {% endfor %}
+            .topbar {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 12px;
+                flex-wrap: wrap;
+            }
 
-	</body>
+            .title {
+                margin: 0;
+                font-family: "Space Grotesk", "Segoe UI", sans-serif;
+                font-size: clamp(28px, 4vw, 36px);
+            }
+
+            .subtitle {
+                margin: 6px 0 0;
+                color: var(--muted);
+            }
+
+            .nav {
+                display: flex;
+                gap: 10px;
+            }
+
+            .link-btn {
+                text-decoration: none;
+                border-radius: 12px;
+                padding: 10px 14px;
+                font-weight: 700;
+                color: #ffffff;
+                background: #1d6f48;
+            }
+
+            .link-btn.alt {
+                background: #b45d1f;
+            }
+
+            .dashboard {
+                display: grid;
+                grid-template-columns: 1.2fr 1fr;
+                gap: 18px;
+                margin-top: 18px;
+            }
+
+            .card {
+                background: var(--panel);
+                border-radius: 20px;
+                border: 1px solid var(--line);
+                padding: 18px;
+            }
+
+            .report-card h2,
+            .add-card h2 {
+                margin: 0;
+                font-size: 20px;
+            }
+
+            .report-sub {
+                color: var(--muted);
+                margin: 8px 0 0;
+            }
+
+            .report-table {
+                width: 100%;
+                margin-top: 14px;
+                border-collapse: collapse;
+                border-radius: 12px;
+                overflow: hidden;
+            }
+
+            .report-table th,
+            .report-table td {
+                text-align: left;
+                padding: 10px 12px;
+                border-bottom: 1px solid var(--line);
+            }
+
+            .report-table th {
+                font-size: 14px;
+                color: #335244;
+                background: #f2f7f4;
+            }
+
+            .report-table tr:last-child td {
+                border-bottom: none;
+            }
+
+            .grade-pill {
+                display: inline-block;
+                min-width: 44px;
+                text-align: center;
+                border-radius: 999px;
+                padding: 4px 10px;
+                font-weight: 700;
+                background: #edf6f0;
+                color: #1a5f3f;
+            }
+
+            .report-empty {
+                color: var(--muted);
+                margin-top: 12px;
+            }
+
+            .add-form,
+            .grade-form {
+                display: grid;
+                gap: 10px;
+            }
+
+            input,
+            select,
+            button {
+                font-family: inherit;
+                font-size: 15px;
+            }
+
+            input,
+            select {
+                width: 100%;
+                padding: 10px;
+                border-radius: 10px;
+                border: 1px solid #cfd8d2;
+                background: #fbfdfc;
+            }
+
+            .btn {
+                border: none;
+                border-radius: 11px;
+                padding: 10px 12px;
+                font-weight: 700;
+                color: #fff;
+                background: var(--good);
+                cursor: pointer;
+            }
+
+            .btn.danger {
+                background: var(--danger);
+            }
+
+            .subjects {
+                margin-top: 20px;
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 14px;
+            }
+
+            .subject-card {
+                border-radius: 16px;
+                border: 1px solid var(--line);
+                background: #ffffff;
+                padding: 14px;
+                box-shadow: 0 10px 26px rgba(0, 0, 0, 0.06);
+            }
+
+            .subject-head {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 10px;
+                flex-wrap: wrap;
+            }
+
+            .subject-name {
+                margin: 0;
+                font-size: 20px;
+                font-family: "Space Grotesk", "Segoe UI", sans-serif;
+            }
+
+            .avg-pill {
+                display: inline-block;
+                border-radius: 999px;
+                padding: 4px 10px;
+                font-weight: 700;
+                background: #edf6f0;
+                color: #1a5f3f;
+            }
+
+            .grade-list {
+                padding-left: 18px;
+                margin: 12px 0;
+            }
+
+            .grade-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 10px;
+                margin-bottom: 8px;
+            }
+
+            .grade-meta {
+                color: var(--muted);
+            }
+
+            .subject-divider {
+                height: 1px;
+                margin: 12px 0;
+                border: 0;
+                background: var(--line);
+            }
+
+            .no-grades {
+                color: var(--muted);
+            }
+
+            @media (max-width: 860px) {
+                .dashboard {
+                    grid-template-columns: 1fr;
+                }
+            }
+        </style>
+    </head>
+
+    <body>
+        <main class="container">
+            <header class="topbar">
+                <div>
+                    <h1 class="title">Notenübersicht</h1>
+                    <p class="subtitle">Fächer verwalten, Noten eintragen und Gesamtschnitt live im Tachometer verfolgen.</p>
+                </div>
+                <nav class="nav" aria-label="Navigation">
+                    <a class="link-btn" href="{{ url_for('menu') }}">Menü</a>
+                    <a class="link-btn alt" href="{{ url_for('termine') }}">Termine</a>
+                </nav>
+            </header>
+
+            <section class="dashboard">
+                <article class="card report-card">
+                    <h2>Zwischenzeugnis-Übersicht</h2>
+                    <p class="report-sub">Alle Fächer kompakt in einer Übersicht mit aktuellem Schnitt.</p>
+
+                    {% if subjects %}
+                        <table class="report-table" aria-label="Zwischenzeugnis Übersicht">
+                            <thead>
+                                <tr>
+                                    <th>Fach</th>
+                                    <th>Schnitt</th>
+                                    <th>Stand</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for subject in subjects %}
+                                    <tr>
+                                        <td>{{ subject.name }}</td>
+                                        <td>
+                                            {% if subject.average == '-' %}
+                                                <span class="grade-pill">-</span>
+                                            {% else %}
+                                                <span class="grade-pill">{{ subject.average }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if subject.average == '-' %}
+                                                Noch keine Noten
+                                            {% else %}
+                                                {{ subject.grades | length }} Einträge
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p class="report-empty">Noch keine Fächer vorhanden. Lege rechts dein erstes Fach an.</p>
+                    {% endif %}
+                </article>
+
+                <article class="card add-card">
+                    <h2>Neues Fach hinzufügen</h2>
+                    <form class="add-form" action="{{ url_for('add_subject') }}" method="POST">
+                        <label for="subject-name">Fachname</label>
+                        <input id="subject-name" type="text" name="name" required>
+                        <button class="btn" type="submit">Fach speichern</button>
+                    </form>
+                </article>
+            </section>
+
+            <section class="subjects">
+                {% for subject in subjects %}
+                    <article class="subject-card">
+                        <div class="subject-head">
+                            <h3 class="subject-name">{{ subject.name }}</h3>
+                            <span class="avg-pill">Schnitt: {{ subject.average }}</span>
+                        </div>
+
+                        <form action="{{ url_for('delete_subject', id=subject.id) }}" method="POST" style="margin-top:10px;">
+                            <button class="btn danger" type="submit" onclick="return confirm('Möchtest du das Fach und alle Noten wirklich löschen?')">Fach löschen</button>
+                        </form>
+
+                        <hr class="subject-divider">
+
+                        <h4>Noten</h4>
+                        {% if subject.grades %}
+                            <ul class="grade-list">
+                                {% for grade in subject.grades %}
+                                    <li class="grade-row">
+                                        <span>{{ grade.grade | int }} <span class="grade-meta">({{ grade.grade_type }})</span></span>
+                                        <form action="{{ url_for('delete_grade', id=grade.id) }}" method="POST">
+                                            <button class="btn danger" type="submit">Löschen</button>
+                                        </form>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="no-grades">Noch keine Noten eingetragen.</p>
+                        {% endif %}
+
+                        <h4>Note hinzufügen</h4>
+                        <form class="grade-form" action="{{ url_for('add_grade', subject_id=subject.id) }}" method="POST">
+                            <label for="grade-{{ subject.id }}">Note (1 bis 6)</label>
+                            <input id="grade-{{ subject.id }}" type="number" step="1" name="grade" min="1" max="6" required>
+
+                            <label for="type-{{ subject.id }}">Art</label>
+                            <select id="type-{{ subject.id }}" name="grade_type" required>
+                                <option value="Kurzarbeit">Kurzarbeit</option>
+                                <option value="Schulaufgabe">Schulaufgabe</option>
+                            </select>
+
+                            <button class="btn" type="submit">Note eintragen</button>
+                        </form>
+                    </article>
+                {% endfor %}
+            </section>
+        </main>
+    </body>
 </html>
