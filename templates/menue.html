@@ -238,12 +238,12 @@
           <h1>Notenmanager</h1>
           <p>Dein Überblick über alle Fächer, Noten und den aktuellen Gesamtschnitt.</p>
         </div>
-        <a class="quick-link" href="{{ url_for('termine') }}">Terminübersicht</a>
+        <a class="quick-link" href="{{ url_for('termine') }}">Abmelden</a>
       </header>
 
       <section class="layout">
         <article class="gauge-card" data-average="{{ overall_average if overall_average is not none else '' }}">
-          <h2 class="gauge-title">Tachometer: Gesamtdurchschnitt</h2>
+          <h2 class="gauge-title">Gesamtdurchschnitt</h2>
           <p class="gauge-subtitle">Skala von 1 (sehr gut) bis 6 (ungenügend)</p>
 
           <div class="gauge-wrap">
