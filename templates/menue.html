@@ -235,10 +235,10 @@
     <main class="shell">
       <header class="header">
         <div class="brand">
-          <h1>Notenmanager</h1>
+          <h1>Willkommen{% if firstname %}, {{ firstname }}{% endif %}!</h1>
           <p>Dein Überblick über alle Fächer, Noten und den aktuellen Gesamtschnitt.</p>
         </div>
-        <a class="quick-link" href="{{ url_for('termine') }}">Abmelden</a>
+        <a class="quick-link" href="{{ url_for('logout') }}">Abmelden</a>
       </header>
 
       <section class="layout">

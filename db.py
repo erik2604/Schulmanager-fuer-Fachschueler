@@ -13,19 +13,33 @@ def create_tables():
     cursor = connection.cursor()
 
     cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL,
+            firstname TEXT NOT NULL,
+            lastname TEXT NOT NULL
+        )
+    """)
+
+    cursor.execute("""
         CREATE TABLE IF NOT EXISTS appointments (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
             title TEXT NOT NULL,
             description TEXT,
             date TEXT NOT NULL,
-            category TEXT
+            category TEXT,
+            FOREIGN KEY (user_id) REFERENCES users (id)
         )
     """)
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS subjects (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL
+            user_id INTEGER NOT NULL,
+            name TEXT NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES users (id)
         )
     """)
 
@@ -36,7 +50,6 @@ def create_tables():
             grade REAL NOT NULL,
             weight INTEGER NOT NULL,
             grade_type TEXT NOT NULL,
-            date TEXT,
             FOREIGN KEY (subject_id) REFERENCES subjects (id)
         )
     """)
