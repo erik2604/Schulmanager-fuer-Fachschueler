@@ -58,7 +58,7 @@ def register():
         )
         conn.commit()
         conn.close()
-        flash("Registrierung erfolgreich. Bitte einloggen.")
+        flash("Registrierung erfolgreich. Bitte einloggen.", "success")
         return redirect(url_for('login'))
         
     return render_template("register.html")
