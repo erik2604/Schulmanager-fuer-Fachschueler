@@ -155,7 +155,7 @@ def delete_appointment(id):
         
     conn = get_connection()
     cursor = conn.cursor()
-    # Nur eigene Termine dürfen gelöscht werden
+    # Nur eigene Termine löschen
     cursor.execute("DELETE FROM appointments WHERE id = ? AND user_id = ?", (id, session["user_id"]))
     conn.commit()
     conn.close()
@@ -181,6 +181,18 @@ def notenuebersicht():
         cursor.execute("SELECT * FROM grades WHERE subject_id = ?", (subject["id"],))
         grades = cursor.fetchall()
         subject_dict["grades"] = grades
+
+        type_notes = {
+            "Schulaufgabe": [],
+            "Kurzarbeit": [],
+            "Mündlich": [],
+        }
+
+        type_stats = {
+            "Schulaufgabe": {"sum": 0, "count": 0},
+            "Kurzarbeit": {"sum": 0, "count": 0},
+            "Mündlich": {"sum": 0, "count": 0},
+        }
         
         #Durchschnitt berechnen
         sum_grades = 0
@@ -189,8 +201,30 @@ def notenuebersicht():
             weight = 2 if grade["grade_type"] == "Schulaufgabe" else 1
             sum_grades += grade["grade"] * weight
             sum_weights += weight
+
+            if grade["grade_type"] in type_stats:
+                type_stats[grade["grade_type"]]["sum"] += grade["grade"]
+                type_stats[grade["grade_type"]]["count"] += 1
+                type_notes[grade["grade_type"]].append({
+                    "id": grade["id"],
+                    "grade": grade["grade"],
+                })
             
         subject_dict["average"] = round(sum_grades / sum_weights, 2) if sum_weights > 0 else "-"
+        subject_dict["average_display"] = int(round(subject_dict["average"])) if sum_weights > 0 else "-"
+
+        subject_dict["schulaufgabe_count"] = type_stats["Schulaufgabe"]["count"]
+        subject_dict["kurzarbeit_count"] = type_stats["Kurzarbeit"]["count"]
+        subject_dict["muendlich_count"] = type_stats["Mündlich"]["count"]
+
+        subject_dict["schulaufgabe_avg"] = round(type_stats["Schulaufgabe"]["sum"] / type_stats["Schulaufgabe"]["count"], 2) if type_stats["Schulaufgabe"]["count"] > 0 else "-"
+        subject_dict["kurzarbeit_avg"] = round(type_stats["Kurzarbeit"]["sum"] / type_stats["Kurzarbeit"]["count"], 2) if type_stats["Kurzarbeit"]["count"] > 0 else "-"
+        subject_dict["muendlich_avg"] = round(type_stats["Mündlich"]["sum"] / type_stats["Mündlich"]["count"], 2) if type_stats["Mündlich"]["count"] > 0 else "-"
+
+        subject_dict["schulaufgabe_notes"] = type_notes["Schulaufgabe"]
+        subject_dict["kurzarbeit_notes"] = type_notes["Kurzarbeit"]
+        subject_dict["muendlich_notes"] = type_notes["Mündlich"]
+
         subjects.append(subject_dict)
         
     conn.close()
@@ -238,6 +272,14 @@ def add_grade(subject_id):
     grade_type = request.form.get("grade_type")
     
     if grade and grade_type:
+        try:
+            grade_value = int(grade)
+        except ValueError:
+            return redirect(url_for('notenuebersicht'))
+
+        if grade_value < 1 or grade_value > 6:
+            return redirect(url_for('notenuebersicht'))
+
         weight = 2 if grade_type == "Schulaufgabe" else 1
         conn = get_connection()
         cursor = conn.cursor()
@@ -247,7 +289,7 @@ def add_grade(subject_id):
         if cursor.fetchone():
             cursor.execute(
                 "INSERT INTO grades (subject_id, grade, weight, grade_type) VALUES (?, ?, ?, ?)",
-                (subject_id, float(grade), weight, grade_type)
+                (subject_id, grade_value, weight, grade_type)
             )
             conn.commit()
         conn.close()
@@ -261,7 +303,7 @@ def delete_grade(id):
         
     conn = get_connection()
     cursor = conn.cursor()
-    # Sicherheitsabfrage: Gehört die Note einem Fach des aktuellen Nutzers?
+    # Gehört die Note einem Fach des aktuellen Nutzers?
     cursor.execute('''
         SELECT grades.id FROM grades 
         JOIN subjects ON grades.subject_id = subjects.id 
@@ -271,6 +313,46 @@ def delete_grade(id):
     if cursor.fetchone():
         cursor.execute("DELETE FROM grades WHERE id = ?", (id,))
         conn.commit()
+    conn.close()
+    return redirect(url_for('notenuebersicht'))
+
+
+#Note ändern
+@app.route("/grades/update/<int:id>", methods=["POST"])
+def update_grade(id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    grade = request.form.get("grade")
+    if not grade:
+        return redirect(url_for('notenuebersicht'))
+
+    try:
+        grade_value = int(grade)
+    except ValueError:
+        return redirect(url_for('notenuebersicht'))
+
+    if grade_value < 1 or grade_value > 6:
+        return redirect(url_for('notenuebersicht'))
+
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT grades.id, grades.grade_type
+        FROM grades
+        JOIN subjects ON grades.subject_id = subjects.id
+        WHERE grades.id = ? AND subjects.user_id = ?
+    ''', (id, session["user_id"]))
+    row = cursor.fetchone()
+
+    if row:
+        weight = 2 if row["grade_type"] == "Schulaufgabe" else 1
+        cursor.execute(
+            "UPDATE grades SET grade = ?, weight = ? WHERE id = ?",
+            (grade_value, weight, id)
+        )
+        conn.commit()
+
     conn.close()
     return redirect(url_for('notenuebersicht'))
 
