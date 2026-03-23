@@ -1,5 +1,5 @@
 #Hauptprogramm
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -103,9 +103,36 @@ def menu():
     conn = get_connection()
     cursor = conn.cursor()
     overall_average = calculate_overall_average(cursor, session["user_id"])
+
+    # Anstehende Termine für die nächsten 14 Tage abrufen
+    today = datetime.now()
+    two_weeks_later = today + timedelta(days=14)
+    today_str = today.strftime("%Y-%m-%d")
+    two_weeks_later_str = two_weeks_later.strftime("%Y-%m-%d")
+    
+    cursor.execute("""
+        SELECT * FROM appointments 
+        WHERE user_id = ? 
+        AND date >= ? 
+        AND date <= ? 
+        ORDER BY date ASC
+    """, (session["user_id"], today_str, two_weeks_later_str))
+    
+    upcoming_appointments_raw = cursor.fetchall()
     conn.close()
 
-    return render_template("menue.html", overall_average=overall_average, firstname=session.get("firstname"))
+    upcoming_appointments = []
+    for app in upcoming_appointments_raw:
+        app_dict = dict(app)
+        if app_dict["date"]:
+            try:
+                date_obj = datetime.strptime(app_dict["date"], "%Y-%m-%d")
+                app_dict["date"] = date_obj.strftime("%d/%m/%Y")
+            except ValueError:
+                pass
+        upcoming_appointments.append(app_dict)
+
+    return render_template("menue.html", overall_average=overall_average, firstname=session.get("firstname"), upcoming_appointments=upcoming_appointments)
 
 #Terminübersicht
 @app.route("/termine")

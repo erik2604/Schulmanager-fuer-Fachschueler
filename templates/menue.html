@@ -289,6 +289,22 @@
               <button class="primary-btn" type="submit">Termine ansehen</button>
             </form>
           </div>
+
+          <div style="margin-top: 24px; border-top: 1px solid #ecf1ed; padding-top: 16px;">
+            <h3 style="font-family: 'Space Grotesk', 'Segoe UI', sans-serif; margin-top: 0; font-size: 16px;">Anstehende Termine (nächste 14 Tage)</h3>
+            {% if upcoming_appointments %}
+              <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;">
+              {% for app in upcoming_appointments %}
+                <li style="background: #f8faf9; padding: 10px 12px; border-radius: 8px; border-left: 4px solid var(--cta);">
+                  <strong style="display: block; font-size: 14px; margin-bottom: 2px;">{{ app.title }}</strong>
+                  <span style="font-size: 13px; color: var(--muted);">🗓️ {{ app.date }}{% if app.category %} | 🏷️ {{ app.category }}{% endif %}</span>
+                </li>
+              {% endfor %}
+              </ul>
+            {% else %}
+              <p style="font-size: 14px; color: var(--muted); margin: 0;">Keine anstehenden Termine in den nächsten 14 Tagen.</p>
+            {% endif %}
+          </div>
         </article>
       </section>
     </main>
