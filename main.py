@@ -238,7 +238,7 @@ def notenuebersicht():
                 })
             
         subject_dict["average"] = round(sum_grades / sum_weights, 2) if sum_weights > 0 else "-"
-        subject_dict["average_display"] = int(round(subject_dict["average"])) if sum_weights > 0 else "-"
+        subject_dict["average_display"] = subject_dict["average_display"] = f"{subject_dict['average']:.2f}".replace(".", ",") if sum_weights > 0 else "-"
 
         subject_dict["schulaufgabe_count"] = type_stats["Schulaufgabe"]["count"]
         subject_dict["kurzarbeit_count"] = type_stats["Kurzarbeit"]["count"]
