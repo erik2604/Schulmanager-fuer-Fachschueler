@@ -330,7 +330,7 @@ def delete_grade(id):
         
     conn = get_connection()
     cursor = conn.cursor()
-    # Gehört die Note einem Fach des aktuellen Nutzers?
+    #Gehört die Note einem Fach des aktuellen Nutzers?
     cursor.execute('''
         SELECT grades.id FROM grades 
         JOIN subjects ON grades.subject_id = subjects.id 
