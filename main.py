@@ -1,17 +1,17 @@
-#Hauptprogramm
-from datetime import datetime, timedelta
+###Hauptprogramm###
 
+from datetime import datetime, timedelta
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from db import create_tables, get_connection
 
 app = Flask(__name__)
-app.secret_key = "geheimes_passwort_hier_ändern" # Wichtig für die Session
+app.secret_key = "9f8c2f1a7b6e4d3c8a1f5e2b9c7d6a4f" #Wichtig für die Session (Verhindert Login Manipulation)
 
 #Datenbank wird erstellt, falls diese nicht bereits existiert
 create_tables()
 
-
+#Berechnung des Gesamtnotendurchschnitts eines Benutzers
 def calculate_overall_average(cursor, user_id):
     cursor.execute('''
         SELECT grades.grade, grades.weight, grades.grade_type 
@@ -34,7 +34,7 @@ def calculate_overall_average(cursor, user_id):
 
     return round(sum_grades / sum_weights, 2)
 
-#Registrierung (optional zum Anlegen von Usern)
+#Registrierung (zum Anlegen von Usern)
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
