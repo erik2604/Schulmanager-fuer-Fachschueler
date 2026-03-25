@@ -240,14 +240,6 @@ def notenuebersicht():
         subject_dict["average"] = round(sum_grades / sum_weights, 2) if sum_weights > 0 else "-"
         subject_dict["average_display"] = subject_dict["average_display"] = f"{subject_dict['average']:.2f}".replace(".", ",") if sum_weights > 0 else "-"
 
-        subject_dict["schulaufgabe_count"] = type_stats["Schulaufgabe"]["count"]
-        subject_dict["kurzarbeit_count"] = type_stats["Kurzarbeit"]["count"]
-        subject_dict["muendlich_count"] = type_stats["Mündlich"]["count"]
-
-        subject_dict["schulaufgabe_avg"] = round(type_stats["Schulaufgabe"]["sum"] / type_stats["Schulaufgabe"]["count"], 2) if type_stats["Schulaufgabe"]["count"] > 0 else "-"
-        subject_dict["kurzarbeit_avg"] = round(type_stats["Kurzarbeit"]["sum"] / type_stats["Kurzarbeit"]["count"], 2) if type_stats["Kurzarbeit"]["count"] > 0 else "-"
-        subject_dict["muendlich_avg"] = round(type_stats["Mündlich"]["sum"] / type_stats["Mündlich"]["count"], 2) if type_stats["Mündlich"]["count"] > 0 else "-"
-
         subject_dict["schulaufgabe_notes"] = type_notes["Schulaufgabe"]
         subject_dict["kurzarbeit_notes"] = type_notes["Kurzarbeit"]
         subject_dict["muendlich_notes"] = type_notes["Mündlich"]
@@ -385,5 +377,4 @@ def update_grade(id):
 
 #Starten des Programms/Applikation
 if __name__ == "__main__":
-    app.run(debug=True)
-
+    app.run(debug=False)
