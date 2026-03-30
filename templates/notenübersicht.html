@@ -156,10 +156,23 @@
 
             .type-cell {
                 min-width: 180px;
+                font-weight: 700;
             }
 
-            .type-cell {
-                font-weight: 700;
+            .section-title {
+                margin: 0;
+            }
+
+            .section-title.with-gap {
+                margin-bottom: 10px;
+            }
+
+            .section-hint {
+                margin: 4px 0 0;
+            }
+
+            .delete-form {
+                margin-top: 8px;
             }
 
             .note-badges {
@@ -269,7 +282,7 @@
             </header>
 
             <section class="panel">
-                <h2 style="margin:0 0 10px;">Fach hinzufügen</h2>
+                <h2 class="section-title with-gap">Fach hinzufügen</h2>
                 <form class="add-form" action="{{ url_for('add_subject') }}" method="POST">
                     <div>
                         <label for="subject-name">Fachname</label>
@@ -280,8 +293,34 @@
             </section>
 
             <section class="panel">
-                <h2 style="margin:0;">Notenübersicht</h2>
-                <p class="subtitle" style="margin-top:4px;">Jede einzelne Note steht in der Zeile des Fachs.</p>
+                <h2 class="section-title">Notenübersicht</h2>
+                <p class="subtitle section-hint">Jede einzelne Note steht in der Zeile des Fachs.</p>
+
+                {% macro render_note_badges(notes) -%}
+                    {% if notes %}
+                        <div class="note-badges">
+                            {% for note in notes %}
+                                <span class="note-badge">
+                                    {{ note.grade | int }}
+                                    <span class="note-actions">
+                                        <button
+                                            class="chip-btn edit"
+                                            type="button"
+                                            data-update-url="{{ url_for('update_grade', id=note.id) }}"
+                                            data-current-grade="{{ note.grade | int }}"
+                                            title="Note ändern"
+                                        >✎</button>
+                                        <form class="chip-form" action="{{ url_for('delete_grade', id=note.id) }}" method="POST">
+                                            <button class="chip-btn delete" type="submit" title="Note löschen">x</button>
+                                        </form>
+                                    </span>
+                                </span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <span class="cell-empty">-</span>
+                    {% endif %}
+                {%- endmacro %}
 
                 {% if subjects %}
                     <div class="table-wrap">
@@ -301,79 +340,13 @@
                                     <tr>
                                         <td><h3 class="subject-name">{{ subject.name }}</h3></td>
                                         <td class="type-cell">
-                                            {% if subject.schulaufgabe_notes %}
-                                                <div class="note-badges">
-                                                    {% for note in subject.schulaufgabe_notes %}
-                                                        <span class="note-badge">
-                                                            {{ note.grade | int }}
-                                                            <span class="note-actions">
-                                                                <button
-                                                                    class="chip-btn edit"
-                                                                    type="button"
-                                                                    data-update-url="{{ url_for('update_grade', id=note.id) }}"
-                                                                    data-current-grade="{{ note.grade | int }}"
-                                                                    title="Note ändern"
-                                                                >✎</button>
-                                                                <form class="chip-form" action="{{ url_for('delete_grade', id=note.id) }}" method="POST">
-                                                                    <button class="chip-btn delete" type="submit" title="Note löschen">x</button>
-                                                                </form>
-                                                            </span>
-                                                        </span>
-                                                    {% endfor %}
-                                                </div>
-                                            {% else %}
-                                                <span class="cell-empty">-</span>
-                                            {% endif %}
+                                            {{ render_note_badges(subject.schulaufgabe_notes) }}
                                         </td>
                                         <td class="type-cell">
-                                            {% if subject.kurzarbeit_notes %}
-                                                <div class="note-badges">
-                                                    {% for note in subject.kurzarbeit_notes %}
-                                                        <span class="note-badge">
-                                                            {{ note.grade | int }}
-                                                            <span class="note-actions">
-                                                                <button
-                                                                    class="chip-btn edit"
-                                                                    type="button"
-                                                                    data-update-url="{{ url_for('update_grade', id=note.id) }}"
-                                                                    data-current-grade="{{ note.grade | int }}"
-                                                                    title="Note ändern"
-                                                                >✎</button>
-                                                                <form class="chip-form" action="{{ url_for('delete_grade', id=note.id) }}" method="POST">
-                                                                    <button class="chip-btn delete" type="submit" title="Note löschen">x</button>
-                                                                </form>
-                                                            </span>
-                                                        </span>
-                                                    {% endfor %}
-                                                </div>
-                                            {% else %}
-                                                <span class="cell-empty">-</span>
-                                            {% endif %}
+                                            {{ render_note_badges(subject.kurzarbeit_notes) }}
                                         </td>
                                         <td class="type-cell">
-                                            {% if subject.muendlich_notes %}
-                                                <div class="note-badges">
-                                                    {% for note in subject.muendlich_notes %}
-                                                        <span class="note-badge">
-                                                            {{ note.grade | int }}
-                                                            <span class="note-actions">
-                                                                <button
-                                                                    class="chip-btn edit"
-                                                                    type="button"
-                                                                    data-update-url="{{ url_for('update_grade', id=note.id) }}"
-                                                                    data-current-grade="{{ note.grade | int }}"
-                                                                    title="Note ändern"
-                                                                >✎</button>
-                                                                <form class="chip-form" action="{{ url_for('delete_grade', id=note.id) }}" method="POST">
-                                                                    <button class="chip-btn delete" type="submit" title="Note löschen">x</button>
-                                                                </form>
-                                                            </span>
-                                                        </span>
-                                                    {% endfor %}
-                                                </div>
-                                            {% else %}
-                                                <span class="cell-empty">-</span>
-                                            {% endif %}
+                                            {{ render_note_badges(subject.muendlich_notes) }}
                                         </td>
                                         <td class="type-cell">{{ subject.average_display }}</td>
                                         <td>
@@ -386,7 +359,7 @@
                                                 </select>
                                                 <button class="btn" type="submit">Eintragen</button>
                                             </form>
-                                            <form action="{{ url_for('delete_subject', id=subject.id) }}" method="POST" style="margin-top:8px;">
+                                            <form class="delete-form" action="{{ url_for('delete_subject', id=subject.id) }}" method="POST">
                                                 <button class="btn danger" type="submit" onclick="return confirm('Möchtest du das Fach und alle Noten wirklich löschen?')">Fach löschen</button>
                                             </form>
                                         </td>
