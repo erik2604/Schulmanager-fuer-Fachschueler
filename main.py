@@ -11,29 +11,6 @@ app.secret_key = "9f8c2f1a7b6e4d3c8a1f5e2b9c7d6a4f" #Wichtig für die Session (V
 #Datenbank wird erstellt, falls diese nicht bereits existiert
 create_tables()
 
-#Berechnung des Gesamtnotendurchschnitts eines Benutzers
-def calculate_overall_average(cursor, user_id):
-    cursor.execute('''
-        SELECT grades.grade, grades.weight, grades.grade_type 
-        FROM grades 
-        JOIN subjects ON grades.subject_id = subjects.id 
-        WHERE subjects.user_id = ?
-    ''', (user_id,))
-    grades = cursor.fetchall()
-
-    sum_grades = 0
-    sum_weights = 0
-
-    for grade in grades:
-        weight = grade["weight"] if grade["weight"] else (2 if grade["grade_type"] == "Schulaufgabe" else 1)
-        sum_grades += grade["grade"] * weight
-        sum_weights += weight
-
-    if sum_weights == 0:
-        return None
-
-    return round(sum_grades / sum_weights, 2)
-
 #Registrierung (zum Anlegen von Usern)
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -93,6 +70,29 @@ def logout():
     session.pop("username", None)
     session.pop("firstname", None)
     return redirect(url_for("login"))
+
+#Berechnung des Gesamtnotendurchschnitts eines Benutzers
+def calculate_overall_average(cursor, user_id):
+    cursor.execute('''
+        SELECT grades.grade, grades.weight, grades.grade_type 
+        FROM grades 
+        JOIN subjects ON grades.subject_id = subjects.id 
+        WHERE subjects.user_id = ?
+    ''', (user_id,))
+    grades = cursor.fetchall()
+
+    sum_grades = 0
+    sum_weights = 0
+
+    for grade in grades:
+        weight = grade["weight"] if grade["weight"] else (2 if grade["grade_type"] == "Schulaufgabe" else 1)
+        sum_grades += grade["grade"] * weight
+        sum_weights += weight
+
+    if sum_weights == 0:
+        return None
+
+    return round(sum_grades / sum_weights, 2)
 
 #Hauptmenü
 @app.route("/")
