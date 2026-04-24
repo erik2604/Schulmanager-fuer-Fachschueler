@@ -72,6 +72,17 @@ def logout():
     return redirect(url_for("login"))
 
 #Berechnung des Gesamtnotendurchschnitts eines Benutzers
+def round_menu_grade(average):
+    base_grade = int(average)
+    decimal_part = average - base_grade
+
+    # Bei genau .5 wird zur besseren Note (kleinere Zahl) gerundet.
+    if decimal_part > 0.5:
+        base_grade += 1
+
+    return min(6, max(1, base_grade))
+
+
 def calculate_overall_average(cursor, user_id):
     cursor.execute('''
         SELECT grades.grade, grades.weight, grades.grade_type 
@@ -92,7 +103,8 @@ def calculate_overall_average(cursor, user_id):
     if sum_weights == 0:
         return None
 
-    return round(sum_grades / sum_weights, 2)
+    average = sum_grades / sum_weights
+    return round_menu_grade(average)
 
 #Hauptmenü
 @app.route("/")

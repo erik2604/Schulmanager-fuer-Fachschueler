@@ -327,7 +327,7 @@
         const angle = -90 + normalized * 180;
 
         needle.style.transform = `rotate(${angle}deg)`;
-        valueEl.textContent = value.toFixed(2);
+        valueEl.textContent = String(Math.round(value));
         textEl.textContent = 'Aktueller Notendurchschnitt';
       })();
     </script>
