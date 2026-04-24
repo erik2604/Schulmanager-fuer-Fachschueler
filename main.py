@@ -84,27 +84,35 @@ def round_menu_grade(average):
 
 
 def calculate_overall_average(cursor, user_id):
-    cursor.execute('''
-        SELECT grades.grade, grades.weight, grades.grade_type 
-        FROM grades 
-        JOIN subjects ON grades.subject_id = subjects.id 
-        WHERE subjects.user_id = ?
-    ''', (user_id,))
-    grades = cursor.fetchall()
+    cursor.execute("SELECT id FROM subjects WHERE user_id = ?", (user_id,))
+    subjects = cursor.fetchall()
 
-    sum_grades = 0
-    sum_weights = 0
+    rounded_subject_grades = []
 
-    for grade in grades:
-        weight = grade["weight"] if grade["weight"] else (2 if grade["grade_type"] == "Schulaufgabe" else 1)
-        sum_grades += grade["grade"] * weight
-        sum_weights += weight
+    for subject in subjects:
+        cursor.execute(
+            "SELECT grade, weight, grade_type FROM grades WHERE subject_id = ?",
+            (subject["id"],)
+        )
+        grades = cursor.fetchall()
 
-    if sum_weights == 0:
+        sum_grades = 0
+        sum_weights = 0
+        for grade in grades:
+            weight = grade["weight"] if grade["weight"] else (2 if grade["grade_type"] == "Schulaufgabe" else 1)
+            sum_grades += grade["grade"] * weight
+            sum_weights += weight
+
+        if sum_weights == 0:
+            continue
+
+        subject_average = sum_grades / sum_weights
+        rounded_subject_grades.append(round_menu_grade(subject_average))
+
+    if not rounded_subject_grades:
         return None
 
-    average = sum_grades / sum_weights
-    return round_menu_grade(average)
+    return round(sum(rounded_subject_grades) / len(rounded_subject_grades), 2)
 
 #Hauptmenü
 @app.route("/")

@@ -327,7 +327,10 @@
         const angle = -90 + normalized * 180;
 
         needle.style.transform = `rotate(${angle}deg)`;
-        valueEl.textContent = String(Math.round(value));
+        valueEl.textContent = value.toLocaleString('de-DE', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
         textEl.textContent = 'Aktueller Notendurchschnitt';
       })();
     </script>
